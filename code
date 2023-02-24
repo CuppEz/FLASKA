@@ -1,0 +1,49 @@
+import matplotlib as plt
+from matplotlib import pyplot as plt
+import math as m
+import numpy as np
+
+f = open("C:/Users/Антон/Desktop/examp9.txt", "r")
+lines = f.readlines()
+odometer = [] # Массив одометрии 1-3.8-10 и тд
+lidar = [] # меж одоментрии данные с лидара расстояние вроде
+sketter_xy = []
+#Убираем пробелы к чОрту и делаем по хьюмански
+for line in lines:
+    od = line.strip().split(";")[0]
+    lid = line.strip().split(";")[1]
+    odometer.append(od.split(","))
+    lidar.append(lid.split(","))
+
+f.close()# припугнули оффом
+# все в аррэй нумпай, так надо.
+odometer = np.array(odometer, float)
+#Не забываем глубину изображения
+for i in range(len(lidar)):
+    lidar[i]=lidar[i][70:len(lidar[i])-55]
+lidar = np.array(lidar, float)
+
+
+xod = []
+yod = []
+
+for i in odometer:
+    xod.append(i[0])
+    yod.append((i[1]))
+# Построение облака точек с лидара
+cloudX = []
+cloudY = []
+i = 0
+for x, y, fi in odometer:
+    fi0 = fi + 2.331733 - 0.679871  # вычисляем самую левую точку на газоне
+    for l in lidar[i]:
+        if l <= 4:
+            cloudX.append(round(((l * np.cos(fi0)) + x + 0.3 * np.cos(fi)), 2))# Округляем, не забываем, че да как, 0.3 до центра куки
+            cloudY.append(round(((l * np.sin(fi0)) + y + 0.3 * np.sin(fi)), 2))#Тоже самое =  Округляем, не забываем, че да как, 0.3 до центра куки
+        fi0 -= 0.0068
+    i += 1
+fig, ax = plt.subplots() # поженили графики, пусть рядом будут
+ax.scatter(cloudX, cloudY, s=1 , c="green") # облако, облако, жир , цвет - точечный график
+ax.plot(xod, yod, linewidth=2.0, color='pink')# the same
+plt.axis('off')
+plt.show()
